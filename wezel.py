@@ -1,36 +1,47 @@
-def find_zero(m, M, N):
-    for i in range(M):
-        for j in range(N):
-            if m[i][j] == 0:
-                return [i, j]
-    return [0, 0]
 
 
 def swap_in_matrix(m, i, j, op, operator, M, N):
     o_m = []
+    new_zero = []
     for k in m:
         o_m.append(k.copy())
 
     if op == 'L':
         o_m[i][j], o_m[i][j-1] = o_m[i][j-1], o_m[i][j]
+        new_zero = [i, j-1]
     if op == 'R':
         o_m[i][j], o_m[i][j+1] = o_m[i][j+1], o_m[i][j]
+        new_zero = [i, j+1]
     if op == 'U':
         o_m[i][j], o_m[i-1][j] = o_m[i-1][j], o_m[i][j]
+        new_zero = [i-1, j]
     if op == 'D':
         o_m[i][j], o_m[i+1][j] = o_m[i+1][j], o_m[i][j]
-    return Wezel(o_m, operator, M, N)
+        new_zero = [i+1, j]
+    return Wezel(o_m, new_zero, operator, M, N)
 
 
 class Wezel(object):
-    def __init__(self, matrix, operators, M, N):
+    def __init__(self, matrix, zero, operators, M, N):
         self.matrix = matrix
-        self.zero = find_zero(matrix, M, N)
+        self.zero = zero
         self.operators = operators
         self.priority = 0
         self.deep = 0
         self.M = M
         self.N = N
+        matrix_str = ""
+        for i in range(self.M):
+            for j in range(self.N):
+                matrix_str += str(matrix[i][j])
+        self.hash_value = hash(matrix_str)
+
+
+    def get_zero(self):
+        return self.zero
+
+    def get_hash(self):
+        return self.hash_value
 
     def set_deep(self, add):
         self.deep = add + 1
@@ -54,11 +65,7 @@ class Wezel(object):
         return self.operators
 
     def isGoal(self, s):
-        for i in range(self.M):
-            for j in range(self.M):
-                if self.matrix[i][j] != s.matrix[i][j]:
-                    return False
-        return True
+        return self.get_hash() == s.get_hash()
 
     def neighbours(self, op):
         i = self.zero[0]
